@@ -28,7 +28,9 @@ def onehot_vector(input_path, output_path):
     words = []
     f = open(input_path, 'r')
     for line in f:
+        # 删除标点符号
         sentence = line.translate(None, string.punctuation)
+        # 分词
         for word in sentence.split():
             words.append(word)
     f.close()
