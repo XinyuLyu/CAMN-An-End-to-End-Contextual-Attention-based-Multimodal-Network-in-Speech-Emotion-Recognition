@@ -1,6 +1,6 @@
 from __future__ import print_function
 from self_attention_hybrid import Position_Embedding,Attention
-from DataLoader_audio import get_data, data_generator, data_generator_output,analyze_data  # process_train_data
+from DataLoader_audio_7204 import get_data, data_generator, data_generator_output,analyze_data  # process_train_data
 from keras.models import Model
 from keras.layers import Dense, Dropout, Input, Embedding, concatenate, \
     GlobalAveragePooling1D, Conv1D, GlobalMaxPooling1D, TimeDistributed,BatchNormalization

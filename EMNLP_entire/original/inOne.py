@@ -7,8 +7,10 @@ from keras.preprocessing import sequence
 path_to_mat = 'E:\\Yue\\Entire Data\\iemocap_ACMMM_2018\\IEMOCAP_Mat_64'
 path_to_rule = 'E:\\Yue\\Entire Data\\iemocap_ACMMM_2018\\word-alignment'
 output_path = 'E:\\Yue\\Entire Data\\iemocap_ACMMM_2018\\Word_Mat_64'
-audio_path_train = 'E:\\Yue\\Entire Data\\iemocap_ACMMM_2018\\Word_Mat_64\\'
-output_path_train = 'E:\\Yue\\Entire Data\\iemocap_ACMMM_2018\\IEMOCAP_Mat_Align_64\\'
+#audio_path_train = 'E:\\Yue\\Entire Data\\iemocap_ACMMM_2018\\IEMOCAP_align\\Word_Mat_Nor_std_40\\'
+#output_path_train = 'E:\\Yue\\Entire Data\\iemocap_ACMMM_2018\\Processed_data\\IEMOCAP_Mat_Nor_Align_std_200_40\\'
+audio_path_train = 'E:\\Yue\\Entire Data\\iemocap_ACMMM_2018\\IEMOCAP_align\\result_wav\\'
+output_path_train = 'E:\\Yue\\Entire Data\\iemocap_ACMMM_2018\\Processed_data\\IEMOCAP_Mat_Whole_Nor_Align_wav_1\\'
 
 
 def get_rules(rule):
@@ -50,8 +52,8 @@ def get_mat_data(path, num):
         sent = []
         for file in files:
             tmp = sio.loadmat(path + str(i) + '\\' + file)
-            tmp = tmp['z1']
-            tmp = sequence.pad_sequences(tmp, dtype='float32', maxlen=500)
+            tmp = tmp['data']
+            tmp = sequence.pad_sequences(tmp, dtype='float32', maxlen=200)
             # print(tmp.shape)
             tmp = tmp.transpose()
             sent.append(tmp)
@@ -69,30 +71,30 @@ def output_mat_data(path, res, num):
 
 
 # # cut into to words
-for filename in os.listdir(path_to_mat):
-    # load file and gather information
-    num, suffix = filename.split('.')
-    mat_file = path_to_mat + '\\' + filename
-    print('Working on', filename)
-    try:
-        mat = sio.loadmat(mat_file)
-    except TypeError:
-        print('Error load mat file:', filename)
-        logfile = open('errLog.txt', 'a')
-        logfile.write('Error load ' + filename + '\n')
-        logfile.close()
-    array = None
-    for k in mat.keys():
-        if not k.startswith('__'):
-            array = mat.get(k)	 # ndarray (64, n)
-            shape = array.shape
-            print('Shape before converting:', shape)
-    rule = open(path_to_rule+'\\'+num+'.txt', 'r')
-    rules = get_rules(rule)
-
-    # cut sentence level mat file into word level mat file
-    os.mkdir(output_path+'\\'+str(num))
-    get_fragments(array, rules, num, filename)
+# for filename in os.listdir(path_to_mat):
+#     # load file and gather information
+#     num, suffix = filename.split('.')
+#     mat_file = path_to_mat + '\\' + filename
+#     print('Working on', filename)
+#     try:
+#         mat = sio.loadmat(mat_file)
+#     except TypeError:
+#         print('Error load mat file:', filename)
+#         logfile = open('errLog.txt', 'a')
+#         logfile.write('Error load ' + filename + '\n')
+#         logfile.close()
+#     array = None
+#     for k in mat.keys():
+#         if not k.startswith('__'):
+#             array = mat.get(k)	 # ndarray (64, n)
+#             shape = array.shape
+#             print('Shape before converting:', shape)
+#     rule = open(path_to_rule+'\\'+num+'.txt', 'r')
+#     rules = get_rules(rule)
+#
+#     # cut sentence level mat file into word level mat file
+#     os.mkdir(output_path+'\\'+str(num))
+#     get_fragments(array, rules, num, filename)
 
 res1 = get_mat_data(audio_path_train, 10039)
 output_mat_data(output_path_train, res1, 10039)

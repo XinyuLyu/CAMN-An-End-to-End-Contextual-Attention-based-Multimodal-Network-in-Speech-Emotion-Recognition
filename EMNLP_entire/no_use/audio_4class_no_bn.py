@@ -1,6 +1,6 @@
 from __future__ import print_function
 from self_attention_hybrid import Attention
-from DataLoader_audio import get_data, analyze_data, data_generator, data_generator_output  # process_train_data
+from DataLoader_audio_7204 import get_data, analyze_data, data_generator, data_generator_output  # process_train_data
 #from keras.models import Model
 from keras.models import Model
 from keras.layers import Dense, Input, GlobalAveragePooling1D, TimeDistributed

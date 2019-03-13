@@ -1,6 +1,6 @@
 from __future__ import print_function
 from self_attention_hybrid import Attention, Position_Embedding
-from DataLoader_5class import get_data, data_generator, data_generator_output  # process_train_data
+from DataLoader_7380_5class import get_data, data_generator, data_generator_output  # process_train_data
 from keras.models import Model
 from keras.layers import Dense, Dropout, Input, Embedding, concatenate, \
     GlobalAveragePooling1D, Conv1D, GlobalMaxPooling1D, TimeDistributed

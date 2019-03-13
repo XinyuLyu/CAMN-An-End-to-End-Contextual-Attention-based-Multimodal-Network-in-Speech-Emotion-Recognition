@@ -12,12 +12,12 @@ from sklearn import preprocessing
 import numpy as np
 
 max_features = 20000
-batch_size = 16
+batch_size = 8
 epo = 100
 numclass = 4
 flag = 0.55
 filters = 128
-audio_path = '/media/yeu/cdfd566c-2b64-486d-ac81-81c7dedfd5df/ACL_2018_entire/Word_Mat_New_1/'
+audio_path = r'E:\Yue\Entire Data\ACL_2018_entire\Word_Mat_New_1\\'
 
 # loading data
 print('Loading data...')
@@ -225,26 +225,24 @@ for i in range(50):
     print('audio branch, epoch: ', str(i))
     train_d, train_l = shuffle(train_audio_data, train_label)
     audio_model.fit_generator(data_generator(audio_path, train_d, train_l, len(train_d)),
-                              steps_per_epoch=len(train_d)/4, epochs=1, verbose=1)
-    """
+                              steps_per_epoch=len(train_d)/batch_size, epochs=1, verbose=1)
+
     loss_a, acc_a = audio_model.evaluate_generator(data_generator(audio_path, test_audio_data, test_label, len(test_audio_data)),
-                                                   steps=len(test_audio_data)/4)
+                                                   steps=len(test_audio_data)/batch_size)
     print('epoch: ', str(i))
     print('loss_a', loss_a, ' ', 'acc_a', acc_a)
-    """
 
-    """
-    if acc_a >= audio_acc and acc_a >= flag:
-        audio_acc = acc_a
-        train_audio_inter, train_audio_weight = inter_audio_hidden.predict_generator(data_generator_output(audio_path, train_audio_data, train_label,
-                                                                               len(train_audio_data)),
-                                                                steps=len(train_audio_data))
+    # if acc_a >= audio_acc and acc_a >= flag:
+    #     audio_acc = acc_a
+        # train_audio_inter, train_audio_weight = inter_audio_hidden.predict_generator(data_generator_output(audio_path, train_audio_data, train_label,
+        #                                                                        len(train_audio_data)),
+        #                                                         steps=len(train_audio_data))
         #train_audio_weight = inter_audio_weight.predict_generator(data_generator_output(audio_path, train_audio_data, train_label, len(train_audio_data)), steps=len(train_audio_data))
-        test_audio_inter, test_audio_weight = inter_audio_hidden.predict_generator(data_generator_output(audio_path, test_audio_data, test_label,
-                                                                              len(test_audio_data)),
-                                                               steps=len(test_audio_data))
+        # test_audio_inter, test_audio_weight = inter_audio_hidden.predict_generator(data_generator_output(audio_path, test_audio_data, test_label,
+        #                                                                       len(test_audio_data)),
+        #                                                        steps=len(test_audio_data))
         #test_audio_weight = inter_audio_weight.predict_generator(data_generator_output(audio_path, test_audio_data, test_label, len(test_audio_data)), steps=len(test_audio_data))
-    """
+
 
 #output_result(test_text_weight, test_audio_weight, tesight)
 #test_text_weight = data_normal(test_text_weight_index)
@@ -255,26 +253,26 @@ for i in range(50):
 
 
 
-final_acc = 0
-for i in range(epo):
-    print('fusion branch, epoch: ', str(i))
-    final_model.fit([train_text_inter, train_audio_inter, train_text_weight, train_audio_weight], train_label, batch_size=batch_size, epochs=1)
-    loss_f, acc_f = final_model.evaluate([test_text_inter, test_audio_inter, test_text_weight, test_audio_weight], test_label, batch_size=batch_size, verbose=0)
-    print('epoch: ', str(i))
-    print('loss_f', loss_f, ' ', 'acc_f', acc_f)
-    if acc_f >= final_acc:
-        final_acc = acc_f
-        result = final_model.predict([test_text_inter, test_audio_inter, test_text_weight, test_audio_weight], batch_size=batch_size)
-        #visualization_res = visualization.predict([test_text_inter, test_audio_inter], batch_size=batch_size)
-        #output_result(visualization_res, test_index)
-        result = np.argmax(result, axis=1)
-
-
-r_0, r_1, r_2, r_3, r_4 = analyze_data(test_label_o, result)
-print('final result: ')
-print('text acc: ', text_acc, ' audio acc: ', audio_acc, ' final acc: ', final_acc)
-print(r_0)
-print(r_1)
-print(r_2)
-print(r_3)
-print(r_4)
+# final_acc = 0
+# for i in range(epo):
+#     print('fusion branch, epoch: ', str(i))
+#     final_model.fit([train_text_inter, train_audio_inter, train_text_weight, train_audio_weight], train_label, batch_size=batch_size, epochs=1)
+#     loss_f, acc_f = final_model.evaluate([test_text_inter, test_audio_inter, test_text_weight, test_audio_weight], test_label, batch_size=batch_size, verbose=0)
+#     print('epoch: ', str(i))
+#     print('loss_f', loss_f, ' ', 'acc_f', acc_f)
+#     if acc_f >= final_acc:
+#         final_acc = acc_f
+#         result = final_model.predict([test_text_inter, test_audio_inter, test_text_weight, test_audio_weight], batch_size=batch_size)
+#         #visualization_res = visualization.predict([test_text_inter, test_audio_inter], batch_size=batch_size)
+#         #output_result(visualization_res, test_index)
+#         result = np.argmax(result, axis=1)
+#
+#
+# r_0, r_1, r_2, r_3, r_4 = analyze_data(test_label_o, result)
+# print('final result: ')
+# print('text acc: ', text_acc, ' audio acc: ', audio_acc, ' final acc: ', final_acc)
+# print(r_0)
+# print(r_1)
+# print(r_2)
+# print(r_3)
+# print(r_4)

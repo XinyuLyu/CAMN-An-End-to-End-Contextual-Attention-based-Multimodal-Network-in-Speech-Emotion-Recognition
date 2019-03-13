@@ -1,6 +1,6 @@
 from __future__ import print_function
 from self_attention_hybrid import Attention
-from DataLoader_audio_wav import data_generator, get_data1, get_data
+from DataLoader_audio_sentence_level import data_generator, get_data1, get_data
 from keras.models import Model
 from keras.layers import Dense
 from keras.layers import Lambda
@@ -19,10 +19,10 @@ from keras import backend
 import numpy as np
 from matplotlib import pyplot as plt
 
-batch_size = 6
+batch_size = 32
 dropout = 0.25
 #audio_path = r'E:\Yue\Entire Data\iemocap_ACMMM_2018\Processed_data\IEMOCAP_Mat_Whole_Nor_Align_wav\\'
-audio_path = r'E:\Yue\Entire Data\iemocap_ACMMM_2018\Processed_data\IEMOCAP_Mat_Whole_Nor_Align_wav_1'
+audio_path = r'E:\Yue\Entire Data\iemocap_ACMMM_2019\MFSC_source\IEMOCAP_Mat_64_update\\'
 
 
 def save_list(path, data):
@@ -42,13 +42,12 @@ def expand_dimensions(x):
 
 # loading data
 print('Loading data...')
-train_audio_data, train_text_data, train_label, test_audio_data, test_text_data, test_label, test_label_o, embed_matrix, dic = get_data()
+train_audio_data, train_text_data, train_label, test_audio_data, test_text_data, test_label, test_label_o, embed_matrix, dic = get_data1()
 
-# Frame-level feature extraction
-#audio_input = Input(shape=(2*16000, ))
-audio_input = Input(shape=(513, 600))
+# sentence-level feature extraction
+audio_input = Input(shape=(64, 600))
 audio_inputs = Lambda(expand_dimensions)(audio_input)
-cnn_1 = Conv2D(32, (3, 3), padding='valid', strides=(1, 1))(audio_input)
+cnn_1 = Conv2D(32, (3, 3), padding='valid', strides=(1, 1))(audio_inputs)
 cnn_1 = Activation('relu')(cnn_1)
 cnn_1 = MaxPooling2D(pool_size=(2, 2))(cnn_1)
 cnn_1 = Dropout(dropout)(cnn_1)
@@ -68,12 +67,17 @@ cnn_4 = Activation('relu')(cnn_4)
 cnn_4 = MaxPooling2D(pool_size=(2, 2))(cnn_4)
 cnn_4 = Dropout(dropout)(cnn_4)
 
-cnn_5 = Conv2D(1024, (3, 3), padding='valid', strides=(1, 1))(cnn_4)
-cnn_5 = Activation('relu')(cnn_5)
-cnn_5 = MaxPooling2D(pool_size=(2, 2))(cnn_5)
-cnn_5 = Dropout(dropout)(cnn_5)
+# cnn_5 = Conv2D(1024, (3, 3), padding='valid', strides=(1, 1))(cnn_4)
+# cnn_5 = Activation('relu')(cnn_5)
+# cnn_5 = MaxPooling2D(pool_size=(2, 2))(cnn_5)
+# cnn_5 = Dropout(dropout)(cnn_5)
 
-audio_att_gap = Flatten()(cnn_5)
+audio_att_gap = Flatten()(cnn_4)
+
+audio_att_gap = Dense(2048)(audio_att_gap)
+audio_att_gap = Activation('relu')(audio_att_gap)
+audio_att_gap = Dropout(dropout)(audio_att_gap)
+
 audio_att_gap = Dense(1024)(audio_att_gap)
 audio_att_gap = Activation('relu')(audio_att_gap)
 audio_att_gap = Dropout(dropout)(audio_att_gap)
@@ -90,33 +94,17 @@ audio_att_gap = Dense(32)(audio_att_gap)
 audio_att_gap = Activation('relu')(audio_att_gap)
 audio_att_gap = Dropout(dropout)(audio_att_gap)
 
-# frame-level model build
-model_frame = Model(audio_input, audio_att_gap)
-model_frame.summary()
+audio_prediction = Dense(4, activation='softmax')(audio_att_gap)
 
-# word-level feature extraction
-word_input = Input(shape=(50, 200, 513))
-word_input1 = TimeDistributed(model_frame)(word_input)
-word_att1 = Attention(n_head=4, d_k=10)([word_input1, word_input1, word_input1])
-word_att1 = Dropout(0.05)(word_att1)
-word_att2 = Attention(n_head=4, d_k=10)([word_att1, word_att1, word_att1])
-word_att2 = Dropout(0.05)(word_att2)
-# word_att2 = Attention(n_head=4, d_k=10)([word_att2, word_att2, word_att2])
-# word_att2 = Dropout(0.1)(word_att2)
-# word_att2 = Attention(n_head=4, d_k=10)([word_att2, word_att2, word_att2])
-# word_att2 = Dropout(0.1)(word_att2)
-word_att_gap = GlobalMaxPooling1D()(word_att2)
-audio_prediction = Dense(4, activation='softmax')(word_att_gap)
-
-audio_model = Model(inputs=word_input, outputs=audio_prediction)
+audio_model = Model(inputs=audio_input, outputs=audio_prediction)
 adam = Adam(lr=0.0001, beta_1=0.9, beta_2=0.999, epsilon=1e-08)  # lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08
 rmsprop = RMSprop(lr=0.00001, rho=0.9, epsilon=1e-08, decay=0.0)
 sgd = SGD(lr=0.00001, momentum=0.0, decay=0.0, nesterov=False)
-#retrain
-model_frame.load_weights(r'E:\Yue\Code\ACL_entire\audio_wav\model_frame_4_class.h5')
-audio_model.load_weights(r'E:\Yue\Code\ACL_entire\audio_wav\audio_model_4_class.h5')
 
-audio_model.compile(loss='categorical_crossentropy', optimizer=adam, metrics=['accuracy'])
+# retrain
+audio_model.load_weights(r'E:\Yue\Code\ACL_entire\audio_mfsc_sentence\audio_model_4_class.h5')
+
+audio_model.compile(loss='categorical_crossentropy', optimizer=sgd, metrics=['accuracy'])
 audio_model.summary()
 
 audio_acc = 0
@@ -135,6 +123,7 @@ audio_loss, audio_acc = audio_model.evaluate_generator(
      steps=len(test_audio_data) / batch_size)
 print(audio_loss, audio_acc)
 '''
+
 for i in range(size):
     print('audio branch, epoch: ', str(i))
     history = audio_model.fit_generator(data_generator(audio_path,
@@ -154,8 +143,7 @@ for i in range(size):
     print('epoch: ', str(i))
     print('loss_a', loss_a, ' ', 'acc_a', acc_a)
     if loss_a <= audio_loss:
-        audio_model.save_weights(r'E:\Yue\Code\ACL_entire\audio_wav\audio_model_4_class.h5')
-        model_frame.save_weights(r'E:\Yue\Code\ACL_entire\audio_wav\model_frame_4_class.h5')
+        audio_model.save_weights(r'E:\Yue\Code\ACL_entire\audio_mfsc_sentence\audio_model_4_class.h5')
         audio_acc = acc_a
         audio_loss = loss_a
 print(audio_loss, audio_acc)
@@ -169,7 +157,7 @@ plt.xlabel("epoch")
 plt.ylabel("audio train/test loss and acc 3.7(wav)")
 plt.legend()
 plt.show()
-save_list(r'E:\Yue\Code\ACL_entire\audio_wav\acc_test.txt', acc_test)
-save_list(r'E:\Yue\Code\ACL_entire\audio_wav\loss_test.txt', loss_test)
-save_list(r'E:\Yue\Code\ACL_entire\audio_wav\acc_train.txt', acc_train)
-save_list(r'E:\Yue\Code\ACL_entire\audio_wav\loss_train.txt', loss_train)
+save_list(r'E:\Yue\Code\ACL_entire\audio_mfsc_sentence\acc_test.txt', acc_test)
+save_list(r'E:\Yue\Code\ACL_entire\audio_mfsc_sentence\loss_test.txt', loss_test)
+save_list(r'E:\Yue\Code\ACL_entire\audio_mfsc_sentence\acc_train.txt', acc_train)
+save_list(r'E:\Yue\Code\ACL_entire\audio_mfsc_sentence\loss_train.txt', loss_train)

@@ -7,19 +7,20 @@ import string
 import scipy.io as scio
 import os
 
-dic_path = '/media/yeu/cdfd566c-2b64-486d-ac81-81c7dedfd5df/ACL_2018_entire/dictionary_new.txt'
+dic_path = r'E:\Yue\Entire Data\ACL_2018_entire\dictionary_new.txt'
 label_category = ['ang', 'exc', 'sad', 'fru', 'hap', 'neu']
-label_path = '/media/yeu/cdfd566c-2b64-486d-ac81-81c7dedfd5df/ACL_2018_entire/label_output_new.txt'
-audio_path = '/media/yeu/cdfd566c-2b64-486d-ac81-81c7dedfd5df/ACL_2018_entire/Word_Mat_New_1/'
-text_path = '/media/yeu/cdfd566c-2b64-486d-ac81-81c7dedfd5df/ACL_2018_entire/text_output_new.txt'
-embed_path = '/media/yeu/cdfd566c-2b64-486d-ac81-81c7dedfd5df/ACL_2018_entire/'
-visualization_text = '/media/yeu/cdfd566c-2b64-486d-ac81-81c7dedfd5df/ACL_2018_entire/Visualization/visualization_text.mat'
-visualization_audio = '/media/yeu/cdfd566c-2b64-486d-ac81-81c7dedfd5df/ACL_2018_entire/Visualization/visualization_audio.mat'
-visualization_fusion = '/media/yeu/cdfd566c-2b64-486d-ac81-81c7dedfd5df/ACL_2018_entire/Visualization/visualization_fusion.mat'
-visualization_index = '/media/yeu/cdfd566c-2b64-486d-ac81-81c7dedfd5df/ACL_2018_entire/Visualization/visualization_label.txt'
+label_path = r'E:\Yue\Entire Data\ACL_2018_entire\label_output_new.txt'
+audio_path = r'E:\Yue\Entire Data\ACL_2018_entire\Word_Mat_New_1\\'
+text_path = r'E:\Yue\Entire Data\ACL_2018_entire\text_output_new.txt'
+embed_path = r'E:\Yue\Entire Data\ACL_2018_entire\\'
+visualization_text = r'E:\Yue\Entire Data\ACL_2018_entire\Visualization\visualization_text.mat'
+visualization_audio = r'E:\Yue\Entire Data\ACL_2018_entire\Visualization\visualization_audio.mat'
+visualization_fusion = r'E:\Yue\Entire Data\ACL_2018_entire\Visualization\visualization_fusion.mat'
+visualization_index = r'E:\Yue\Entire Data\ACL_2018_entire\Visualization\visualization_label.txt'
 maxlen = 98
 numclass = 4
 num = 7204
+batch_size = 8
 
 
 def get_label(path):
@@ -58,13 +59,12 @@ def get_hier_mat_data():
     return res
 
 
-
 def get_text_data(path, dic):
     f = open(path, 'r')
     res = []
     i = 0
     for line in f:
-        text = embed_onehot(dic, line.translate(None, string.punctuation))
+        text = embed_onehot(dic, line.translate(str.maketrans('', '', string.punctuation)))
         res.append(text)
         i += 1
     f.close()
@@ -119,7 +119,7 @@ def data_generator(path, audio_data, audio_label, num):
     while 1:
         res, res_label = [], []
         j = 0
-        while j < 4:
+        while j < batch_size:
             if i == num:
                 i = 0
             tmp = scio.loadmat(path + str(audio_data[i]) + ".mat")
@@ -173,6 +173,7 @@ def get_data():
     audio_data = get_hier_mat_data()
     text_data = get_text_data(text_path, dic)
     train_audio_data, train_text_data, train_label, test_audio_data, test_text_data, test_label_o, test_index = seperate_hier_dataset(audio_data, text_data, label)
+    print(train_text_data)
     train_label = to_categorical(train_label, num_classes=numclass)
     train_text_data = sequence.pad_sequences(train_text_data, padding='post', truncating='post', maxlen=maxlen)
     test_label = to_categorical(test_label_o, num_classes=numclass)

@@ -1,8 +1,8 @@
 import numpy as np
 import scipy.io as scio
 from sklearn import preprocessing
-audio_path = r'E:\Yue\Entire Data\iemocap_ACMMM_2018\IEMOCAP_Mat_Files\\'
-output_path = r'E:\Yue\Entire Data\iemocap_ACMMM_2018\IEMOCAP_Mat_Nor_std\\'
+audio_path = r'E:\Yue\Entire Data\iemocap_ACMMM_2019\MFSC_source\IEMOCAP_Mat_64_update\\'
+output_path = r'E:\Yue\Entire Data\iemocap_ACMMM_2019\Data_normalization\IEMOCAP_Mat_64_update\\'
 num = 10039
 
 
