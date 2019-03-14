@@ -2,6 +2,9 @@ import string
 from random import shuffle,randint
 from nltk.corpus import stopwords
 from augmentation_data import *
+import nltk
+import requests
+
 
 index = get_ori_index()
 
@@ -58,6 +61,26 @@ def drop(index,dict,p):
             j+=1
     index_=get_index(text_,dict)
     return index_
+
+
+def replace_synonym(index, dict):
+    text_ = get_text(index, dict)
+    for line in text_:
+        tokens = nltk.word_tokenize(line)
+        pos_tags = nltk.pos_tag(tokens)
+        for word,pos in pos_tags:
+            j = 0
+            if pos == "JJ":
+                url = 'https://api.datamuse.com/words?rel_syn=' + word + '&max=1'
+                content = requests.get(url).json()
+                line[j] = content[0]['word']
+            j += 1
+    index_ = get_index(text_, dict)
+    return index_
+
+
+
+
 
 
 
