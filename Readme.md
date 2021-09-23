@@ -1,4 +1,4 @@
-# EMNLP 2019 Abstract
+# EMNLP 2019 
 ## **CAMN**: An End-to-End Contextual Attention based Multimodal Network in Speech Emotion Recognition
 
 Context-dependent multimodal emotion recognition is challenging because:   
